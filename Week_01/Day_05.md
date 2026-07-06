@@ -1,5 +1,5 @@
 # Day 5 — Advanced Reconnaissance
-
+**NICSI Internship Program 2026**
 
 **Tools**
 ● theHarvester ● Recon-ng ● Amass ● Maltego CE
@@ -94,9 +94,23 @@ Raw text lists of 200 subdomains and 50 emails are hard to reason about. Asset m
 
 ## 4. Tool: theHarvester
 
-**theHarvester** is a passive OSINT tool built specifically for gathering **emails, subdomains, hostnames, employee names, and IPs** from public sources (search engines, PGP servers, key APIs) — it's often the very first tool run in a recon phase because it's fast and entirely passive.
+**theHarvester** is a passive OSINT tool built specifically for gathering **emails, subdomains, hostnames, employee names, and IPs** from public sources — it's often the very first tool run in a recon phase because it's fast and entirely passive.
 
-### 4.1 Top 10 Commands
+### 4.1 How It Works
+theHarvester doesn't scan or probe the target at all — it queries **third-party public sources** on the target's behalf and aggregates whatever they already know:
+- **Search engines** (Google, Bing, DuckDuckGo) — crawled/cached pages mentioning the domain.
+- **Certificate Transparency logs** (crt.sh) — every SSL certificate ever issued for the domain, which reveals subdomains.
+- **PGP key servers** — public encryption keys often list an email and organization.
+- **Other OSINT APIs** (Shodan, Hunter.io, etc., depending on version/API keys configured).
+
+It sends your query to each selected source, parses the responses, deduplicates the results, and prints a consolidated list of emails, hosts, subdomains, and IPs.
+
+### 4.2 What It's Used For
+- The **first pass** of any recon engagement — quick, safe, and needs no authorization since it's fully passive.
+- Building an initial list of employee emails for phishing-simulation or password-spraying planning.
+- Getting a fast, rough subdomain list before running deeper active tools like Amass.
+
+### 4.3 Important Commands
 
 ```bash
 theHarvester -d example.com -b google
@@ -152,9 +166,24 @@ Displays the **help menu** — lists all supported data sources (`-b` options) a
 
 ## 5. Tool: Recon-ng
 
-**Recon-ng** is a full-featured, **modular** web reconnaissance framework — think "Metasploit, but for OSINT." It has a command-line interface similar to Metasploit, with **modules** for different recon tasks (subdomain enum, email harvesting, geolocation, breach lookups, etc.) organized into **workspaces**.
+**Recon-ng** is a full-featured, **modular** web reconnaissance framework — think "Metasploit, but for OSINT." It has a command-line interface similar to Metasploit, with **modules** for different recon tasks organized into **workspaces**.
 
-### 5.1 Top 10 Commands
+### 5.1 How It Works
+Recon-ng runs as an interactive shell, not a single-shot command. The workflow is always:
+1. Create/select a **workspace** (an isolated project database for one target).
+2. Search the **marketplace** for a relevant module and install it.
+3. **Load** the module and set its required **options** (e.g., the target domain).
+4. **Run** it — the module queries its data source (an API, a scraping technique, a breach database, etc.) and stores structured results (hosts, contacts, credentials, etc.) directly into the workspace's database.
+5. Chain more modules together, each one enriching the same dataset — e.g., one module finds hosts, another resolves them to IPs, another finds contacts tied to those hosts.
+
+Because every module's output feeds the same underlying database, Recon-ng is built for **layered, incremental** recon rather than one-off lookups.
+
+### 5.2 What It's Used For
+- Running **repeatable, structured OSINT workflows** instead of manually juggling many separate tools.
+- Centralizing all findings (hosts, contacts, credentials, social profiles) about one target into a single queryable database.
+- Automating recon pipelines — modules can be scripted/chained for repeated engagements.
+
+### 5.3 Important Commands
 
 ```bash
 recon-ng
@@ -215,9 +244,21 @@ Shows detailed **information about the currently loaded module** — description
 
 ## 6. Tool: Amass
 
-**Amass** (OWASP Amass) is one of the most powerful **subdomain enumeration and attack-surface mapping** tools available — it combines passive OSINT sources, active DNS resolution, brute-forcing, and even network mapping into one tool, and is widely considered an industry standard for asset discovery at scale.
+**Amass** (OWASP Amass) is one of the most powerful **subdomain enumeration and attack-surface mapping** tools available — it combines passive OSINT sources, active DNS resolution, and brute-forcing into one tool, and is widely considered an industry standard for asset discovery at scale.
 
-### 6.1 Top 10 Commands
+### 6.1 How It Works
+Amass works in layers, and you control how many of them run:
+- **Passive layer** — queries dozens of external OSINT sources and APIs (certificate transparency logs, public DNS datasets, search engines) simultaneously, without ever touching the target's own DNS servers.
+- **Active layer** — once candidate subdomains are gathered, Amass resolves them directly against DNS to confirm they're real and live, and can attempt techniques like zone transfers.
+- **Brute-force layer** — tries large wordlists of common subdomain names against the target's DNS to catch names no passive source ever indexed.
+- Internally, Amass builds a **graph database** of everything it finds (domains, subdomains, IPs, ASNs, netblocks) so it can show not just a flat list, but how assets relate to each other.
+
+### 6.2 What It's Used For
+- The **deepest and most complete subdomain enumeration** available in this tool set — used when a quick pass (like theHarvester) isn't thorough enough.
+- Mapping an organization's full external attack surface, including shared hosting and infrastructure relationships.
+- Feeding a clean, deduplicated subdomain list into downstream tools (Nmap, httpx, Nuclei) later in an assessment.
+
+### 6.3 Important Commands
 
 ```bash
 amass enum -d example.com
