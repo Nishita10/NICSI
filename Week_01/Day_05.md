@@ -7,7 +7,7 @@
 **Topics**
 ● Email Enumeration ● Subdomain Discovery ● Asset Mapping
 
-A complete reference covering email enumeration, subdomain discovery, and asset mapping — using theHarvester, Recon-ng, Amass, and Maltego CE. (Topics are explained first, followed by the tools — each with its top 10 most-used commands explained.)
+A complete reference covering email enumeration, subdomain discovery, and asset mapping — using theHarvester, Recon-ng, Amass, and Maltego CE. 
 
 > ⚠️ **Ethical Note:** These tools mostly gather **passive/OSINT data** — information already public on the internet (search engines, certificate logs, public APIs). That makes them low-risk, but the moment you start actively probing a target's infrastructure (port scans, brute-forcing), you're back in "authorization required" territory. Always practice on your own domains or authorized lab targets.
 
