@@ -1,5 +1,5 @@
 # Day 5 — Advanced Reconnaissance
-**NICSI Internship Program 2026**
+
 
 **Tools**
 ● theHarvester ● Recon-ng ● Amass ● Maltego CE
